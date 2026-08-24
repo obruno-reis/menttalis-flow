@@ -64,6 +64,79 @@ const PATTERNS: Record<ToneEvent, { system: Note[]; chime: Note[] }> = {
   },
 }
 
+/**
+ * White noise, generated once and reused. Regenerated only if the context
+ * comes back at a different sample rate (device or output change).
+ */
+let noise: AudioBuffer | null = null
+
+function getNoise(audio: AudioContext): AudioBuffer {
+  if (!noise || noise.sampleRate !== audio.sampleRate) {
+    const length = Math.floor(audio.sampleRate * 0.1)
+    noise = audio.createBuffer(1, length, audio.sampleRate)
+    const data = noise.getChannelData(0)
+    for (let i = 0; i < length; i += 1) data[i] = Math.random() * 2 - 1
+  }
+  return noise
+}
+
+/**
+ * The press of a button — soft, close and short.
+ *
+ * Two layers: a low sine that drops in pitch, which gives the press its weight,
+ * and a very brief noise transient rolled off above ~1.5kHz, which supplies the
+ * sense of material without the sharp edge a raw click would have. Each press is
+ * detuned slightly at random, so a run of them doesn't sound machine-stamped.
+ *
+ * Deliberately quieter than the session tones: it is texture, not a signal.
+ */
+export function playClick(volume: number): void {
+  if (volume <= 0) return
+  const audio = getContext()
+  if (!audio) return
+
+  /* A hair of lookahead: on the very first press the context is still resuming,
+     and scheduling exactly at currentTime can drop the sound. */
+  const at = audio.currentTime + 0.005
+  const level = 0.34 * volume
+  const detune = 0.94 + Math.random() * 0.12
+
+  const out = audio.createGain()
+  out.gain.value = 1
+  out.connect(audio.destination)
+
+  /* Body — the weight of the press. */
+  const body = audio.createOscillator()
+  const bodyGain = audio.createGain()
+  body.type = 'sine'
+  body.frequency.setValueAtTime(220 * detune, at)
+  body.frequency.exponentialRampToValueAtTime(120 * detune, at + 0.055)
+  bodyGain.gain.setValueAtTime(0, at)
+  bodyGain.gain.linearRampToValueAtTime(level * 0.62, at + 0.006)
+  bodyGain.gain.exponentialRampToValueAtTime(0.0001, at + 0.08)
+  body.connect(bodyGain)
+  bodyGain.connect(out)
+  body.start(at)
+  body.stop(at + 0.1)
+
+  /* Tick — the material, softened by the low-pass. */
+  const tick = audio.createBufferSource()
+  tick.buffer = getNoise(audio)
+  const lowpass = audio.createBiquadFilter()
+  lowpass.type = 'lowpass'
+  lowpass.frequency.value = 1500 * detune
+  lowpass.Q.value = 0.7
+  const tickGain = audio.createGain()
+  tickGain.gain.setValueAtTime(0, at)
+  tickGain.gain.linearRampToValueAtTime(level * 0.5, at + 0.004)
+  tickGain.gain.exponentialRampToValueAtTime(0.0001, at + 0.032)
+  tick.connect(lowpass)
+  lowpass.connect(tickGain)
+  tickGain.connect(out)
+  tick.start(at)
+  tick.stop(at + 0.06)
+}
+
 export function playTone(event: ToneEvent, mode: SoundMode, volume: number): void {
   if (mode === 'mute' || volume <= 0) return
   const audio = getContext()

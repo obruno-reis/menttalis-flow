@@ -13,6 +13,7 @@ import { Intro } from './components/ui/Intro'
 import { SegmentedControl } from './components/ui/SegmentedControl'
 import { SvgFilters } from './components/ui/SvgFilters'
 import { Wordmark } from './components/ui/Wordmark'
+import { useClickSound } from './hooks/useClickSound'
 import { useFocusSession } from './hooks/useFocusSession'
 import { useFullscreen } from './hooks/useFullscreen'
 import { useNow } from './hooks/useNow'
@@ -52,6 +53,8 @@ export default function App() {
     volume: settings.volume,
     cyclesUntilLongBreak: settings.cyclesUntilLongBreak,
   })
+
+  useClickSound(settings.soundMode, settings.volume)
 
   const { stage, timer } = session
   const isSessionActive = stage === 'focus' || stage === 'break'
