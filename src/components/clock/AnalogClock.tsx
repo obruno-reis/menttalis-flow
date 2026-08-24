@@ -117,6 +117,7 @@ export function AnalogClock({ data, tone, size }: ClockProps) {
           <RollingNumber
             value={`${formatClock(data.remainingMs).minutes}:${formatClock(data.remainingMs).seconds}`}
             snapKey={data.mode}
+            secondsTail={2}
           />
         </div>
       )}

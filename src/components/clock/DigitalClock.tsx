@@ -40,7 +40,7 @@ export function DigitalClock({ data, tone, size }: ClockProps) {
           } as CSSProperties
         }
       >
-        <RollingNumber value={primary} snapKey={data.mode} />
+        <RollingNumber value={primary} snapKey={data.mode} secondsTail={isWatch ? 0 : 2} />
         {trailing !== null && (
           <span
             className="clock-numerals tabular-nums"
@@ -54,7 +54,7 @@ export function DigitalClock({ data, tone, size }: ClockProps) {
               } as CSSProperties
             }
           >
-            <RollingNumber value={trailing} snapKey={data.mode} />
+            <RollingNumber value={trailing} snapKey={data.mode} secondsTail={2} />
           </span>
         )}
       </div>

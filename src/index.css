@@ -72,6 +72,10 @@
   --motion-normal: 360ms;
   --motion-slow: 640ms;
   --motion-ambient: 4000ms;
+  /* Odometer roll. The fast one has to finish inside a one-second tick, so it
+     is reserved for the seconds column; everything slower than that glides. */
+  --motion-roll-fast: 240ms;
+  --motion-roll-slow: 760ms;
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-spring: cubic-bezier(0.3, 1.4, 0.5, 1);

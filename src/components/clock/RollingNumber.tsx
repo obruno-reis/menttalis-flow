@@ -9,6 +9,13 @@ interface Props {
    * between wall time and a countdown, where a long roll reads as a slot machine.
    */
   snapKey?: string
+  /**
+   * How many trailing digit columns advance once per second. Those have to
+   * finish rolling inside their own tick, so they keep the quick transition;
+   * every column ahead of them changes at most once a minute and gets the slow,
+   * gliding one. `MM:SS` passes 2, `HH:MM` passes 0.
+   */
+  secondsTail?: number
 }
 
 const DIGITS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
@@ -30,7 +37,7 @@ const CELL = 1.3
  * clock therefore dissolves the fill into a brand-green outline locally, the
  * same way the background grid is uncovered.
  */
-export function RollingNumber({ value, className, snapKey = '' }: Props) {
+export function RollingNumber({ value, className, snapKey = '', secondsTail = 0 }: Props) {
   const reduced = useReducedMotion()
 
   return (
@@ -49,10 +56,10 @@ export function RollingNumber({ value, className, snapKey = '' }: Props) {
       {/* Each column holds all ten digits, so the strips are hidden from
           assistive tech and the real value exposed as plain text instead. */}
       <span className="sr-only">{value}</span>
-      <Digits value={value} snapKey={snapKey} reduced={reduced} layer="fill" />
+      <Digits value={value} snapKey={snapKey} reduced={reduced} layer="fill" secondsTail={secondsTail} />
       {!reduced && (
         <span className="numerals-outline" aria-hidden="true">
-          <Digits value={value} snapKey={snapKey} reduced={reduced} layer="outline" />
+          <Digits value={value} snapKey={snapKey} reduced={reduced} layer="outline" secondsTail={secondsTail} />
         </span>
       )}
     </span>
@@ -64,6 +71,7 @@ function Digits({
   snapKey,
   reduced,
   layer,
+  secondsTail,
 }: {
   value: string
   snapKey: string
@@ -71,36 +79,72 @@ function Digits({
   /* Only the solid layer gets punched out under the cursor; the outlined copy
      must keep its own glyphs intact or the two masks cancel each other. */
   layer: 'fill' | 'outline'
+  secondsTail: number
 }) {
+  /* Resolved up front, over digit columns only, so separators never shift the
+     tail and nothing has to be counted while rendering. */
+  const digitIndices = value
+    .split('')
+    .map((char, index) => (DIGITS.includes(char) ? index : -1))
+    .filter((index) => index >= 0)
+  const ticksEverySecond = new Set(digitIndices.slice(digitIndices.length - secondsTail))
+
   return (
     <span
       aria-hidden="true"
       className={layer === 'fill' ? 'numerals-fill' : undefined}
       style={{ display: 'inline-flex', alignItems: 'flex-start' }}
     >
-      {value.split('').map((char, index) =>
-        DIGITS.includes(char) ? (
-          <DigitColumn key={`${snapKey}-${index}`} digit={Number(char)} reduced={reduced} />
-        ) : (
-          <span
-            key={index}
-            style={{
-              display: 'inline-block',
-              height: `${CELL}em`,
-              lineHeight: CELL,
-              width: '0.34em',
-              textAlign: 'center',
-            }}
-          >
-            {char}
-          </span>
-        ),
-      )}
+      {value.split('').map((char, index) => {
+        if (!DIGITS.includes(char)) {
+          return (
+            <span
+              key={index}
+              style={{
+                display: 'inline-block',
+                height: `${CELL}em`,
+                lineHeight: CELL,
+                width: '0.34em',
+                textAlign: 'center',
+              }}
+            >
+              {char}
+            </span>
+          )
+        }
+        return (
+          <DigitColumn
+            key={`${snapKey}-${index}`}
+            digit={Number(char)}
+            reduced={reduced}
+            ticksEverySecond={ticksEverySecond.has(index)}
+          />
+        )
+      })}
     </span>
   )
 }
 
-function DigitColumn({ digit, reduced }: { digit: number; reduced: boolean }) {
+function DigitColumn({
+  digit,
+  reduced,
+  ticksEverySecond,
+}: {
+  digit: number
+  reduced: boolean
+  ticksEverySecond: boolean
+}) {
+  /*
+   * The seconds column snaps and settles (ease-out): it has under a second to
+   * land, so it should get out of the way. The slower columns use the symmetric
+   * curve instead, which accelerates and decelerates like a physical drum —
+   * with ease-out at this duration most of the travel happened in the first
+   * 140ms and the rest was just a long settle, which still reads as abrupt.
+   */
+  const roll = ticksEverySecond
+    ? 'var(--motion-roll-fast) var(--ease-out)'
+    : 'var(--motion-roll-slow) var(--ease-standard)'
+
   return (
     <span
       className="digit-column"
@@ -116,7 +160,7 @@ function DigitColumn({ digit, reduced }: { digit: number; reduced: boolean }) {
         style={{
           display: 'block',
           transform: `translateY(${-digit * 10}%)`,
-          transition: reduced ? 'none' : 'transform 240ms var(--ease-out)',
+          transition: reduced ? 'none' : `transform ${roll}`,
         }}
       >
         {DIGITS.map((d) => (

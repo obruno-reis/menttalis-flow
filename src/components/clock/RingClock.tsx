@@ -76,7 +76,7 @@ export function RingClock({ data, tone, size }: ClockProps) {
           } as CSSProperties
         }
       >
-        <RollingNumber value={primary} snapKey={data.mode} />
+        <RollingNumber value={primary} snapKey={data.mode} secondsTail={isWatch ? 0 : 2} />
       </div>
     </div>
   )
