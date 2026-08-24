@@ -9,6 +9,13 @@
   # Vite 8 requires Node 20.19+ / 22.12+.
   NODE_VERSION = "22"
 
+# Header rules are matched against the path as *requested*, before any rewrite
+# is applied — so each file needs a rule for both forms it can be asked for:
+# with the /flow prefix (what the browser requests, since the build carries that
+# base) and without it (what arrives when menttalis.com proxies and strips it).
+# Measured on a deploy preview: with only the unprefixed rule, /flow/assets/*
+# silently fell back to must-revalidate and never got cached.
+
 # The service worker must never be served from cache: a stale one keeps
 # controlling the page and visitors would never receive a new build.
 [[headers]]
@@ -16,9 +23,19 @@
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
 
+[[headers]]
+  for = "/flow/sw.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
 # Vite fingerprints everything under /assets, so those files are immutable.
 [[headers]]
   for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/flow/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
