@@ -135,6 +135,27 @@ npm run build
 
 A saída vai para `dist/`.
 
+### Custo de deploy
+
+No plano Free da Netlify, **cada deploy de produção custa 15 créditos** de uma
+cota de 300 por mês — cerca de **20 deploys mensais**, somando todos os projetos
+do time. Banda e requisições são baratas em comparação: 1,59 GB custou 31,9
+créditos, e 20 mil requisições custaram 4.
+
+Consequência prática: o gargalo é a frequência de deploy, não o tráfego. Vale
+juntar alterações antes de dar push na `main`. Quando a cota acaba, os sites
+publicados continuam no ar, mas novos deploys de produção ficam pausados até o
+ciclo virar.
+
+**Deploy previews de Pull Request não consomem essa cota.** É o caminho para
+revisar ou compartilhar uma versão sem gastar deploy: abra um PR e use a URL
+`deploy-preview-N--menttalis-flow.netlify.app`, que é pública.
+
+Nessa URL o app é servido na raiz, e não em `/flow`. Funciona porque o
+`netlify.toml` remapeia `/flow/*` de volta para a raiz — mas o service worker
+registra com escopo `/flow/` e por isso não controla a página raiz do preview.
+O app funciona normalmente; só o comportamento offline não se aplica ali.
+
 ## Limitações conhecidas
 
 - As transições animadas (entrada do painel, troca de relógio, contração da
