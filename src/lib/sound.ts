@@ -1,3 +1,4 @@
+import clickSampleUrl from '../assets/audio/click.wav'
 import type { SoundMode } from '../types'
 
 type ToneEvent = 'start' | 'pause' | 'complete' | 'breakStart'
@@ -22,7 +23,84 @@ function getContext(): AudioContext | null {
 
 /** Call from a click/keydown handler to unlock audio on first interaction. */
 export function primeAudio(): void {
-  getContext()
+  const audio = getContext()
+  if (audio) ensureClickBuffer(audio)
+}
+
+/* ------------------------------------------------------------------------ */
+/* Press sound — a recorded sample, with a synthesized fallback              */
+/* ------------------------------------------------------------------------ */
+
+let clickBuffer: AudioBuffer | null = null
+let clickBytes: Promise<ArrayBuffer> | null = null
+let decoding = false
+
+/**
+ * Fetched separately from decoding: the bytes need no AudioContext, so the
+ * request can start before the first gesture and only the decode has to wait.
+ */
+function fetchClickBytes(): Promise<ArrayBuffer> {
+  if (!clickBytes) {
+    clickBytes = fetch(clickSampleUrl).then((response) => {
+      if (!response.ok) throw new Error(`click sample: ${response.status}`)
+      return response.arrayBuffer()
+    })
+  }
+  return clickBytes
+}
+
+function ensureClickBuffer(audio: AudioContext): void {
+  if (clickBuffer || decoding) return
+  decoding = true
+  fetchClickBytes()
+    /* decodeAudioData detaches the buffer it is given, so it gets a copy and
+       the original stays reusable if a later decode has to be retried. */
+    .then((bytes) => audio.decodeAudioData(bytes.slice(0)))
+    .then((buffer) => {
+      clickBuffer = buffer
+    })
+    .catch(() => {
+      /* Left on the synthesized press. */
+    })
+    .finally(() => {
+      decoding = false
+    })
+}
+
+/**
+ * The press of a control: a short, dry tap.
+ *
+ * Chosen from the Kenney CC0 interface pack by measurement rather than by name
+ * — of the short candidates it carries the most low-frequency weight and the
+ * least treble, and its spectrum is noise-like rather than a pure tone, which is
+ * what keeps it from reading as a digital beep. Trimmed to its audible 40ms and
+ * converted to WAV, because Safari does not reliably decode Ogg Vorbis.
+ *
+ * The playback rate is nudged at random per press, so a run of them doesn't
+ * sound machine-stamped. Deliberately quieter than the session tones: this is
+ * texture, not a signal.
+ */
+export function playClick(volume: number): void {
+  if (volume <= 0) return
+  const audio = getContext()
+  if (!audio) return
+
+  ensureClickBuffer(audio)
+  if (!clickBuffer) {
+    playSynthClick(audio, volume)
+    return
+  }
+
+  const source = audio.createBufferSource()
+  source.buffer = clickBuffer
+  source.playbackRate.value = 0.97 + Math.random() * 0.06
+
+  const gain = audio.createGain()
+  gain.gain.value = 0.5 * volume
+
+  source.connect(gain)
+  gain.connect(audio.destination)
+  source.start(audio.currentTime + 0.005)
 }
 
 interface Note {
@@ -81,20 +159,11 @@ function getNoise(audio: AudioContext): AudioBuffer {
 }
 
 /**
- * The press of a button — soft, close and short.
- *
- * Two layers: a low sine that drops in pitch, which gives the press its weight,
- * and a very brief noise transient rolled off above ~1.5kHz, which supplies the
- * sense of material without the sharp edge a raw click would have. Each press is
- * detuned slightly at random, so a run of them doesn't sound machine-stamped.
- *
- * Deliberately quieter than the session tones: it is texture, not a signal.
+ * Fallback press, synthesized. Used until the sample has decoded, and for good
+ * if fetching it ever fails — losing the file should soften the sound, not
+ * silence the interface.
  */
-export function playClick(volume: number): void {
-  if (volume <= 0) return
-  const audio = getContext()
-  if (!audio) return
-
+function playSynthClick(audio: AudioContext, volume: number): void {
   /* A hair of lookahead: on the very first press the context is still resuming,
      and scheduling exactly at currentTime can drop the sound. */
   const at = audio.currentTime + 0.005

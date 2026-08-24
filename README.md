@@ -72,8 +72,13 @@ invadirem; a margem negativa devolve esse espaço extra ao layout. A coluna
 inteira é escondida de leitores de tela (`aria-hidden`), que recebem o valor
 como texto.
 
-**Sons são sintetizados.** Web Audio API, sem arquivos de áudio. Nada toca antes
-de uma interação do usuário.
+**Sons.** Os tons de sessão são sintetizados via Web Audio API, sem arquivo. O
+toque dos controles usa uma amostra curta (`src/assets/audio/click.wav`, 4,4 KB)
+do pack [Kenney Interface Sounds](https://kenney.nl/assets/interface-sounds),
+que é CC0 — aparada para os 40ms audíveis e convertida para WAV, porque o Safari
+não decodifica Ogg Vorbis de forma confiável. Se a amostra não carregar, o toque
+cai num equivalente sintetizado em vez de emudecer. Nada toca antes de uma
+interação do usuário.
 
 **Dois verdes, não um.** O verde da marca sobre cinza claro fica muito abaixo do
 contraste legível, então `--accent` é o verde vivo usado como preenchimento (com

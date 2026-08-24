@@ -38,7 +38,9 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        /* wav included so the press sound survives offline; without it the app
+           silently falls back to the synthesized click. */
+        globPatterns: ['**/*.{js,css,html,svg,png,woff2,wav}'],
       },
     }),
   ],
