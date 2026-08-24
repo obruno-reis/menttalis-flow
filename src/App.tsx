@@ -232,7 +232,9 @@ export default function App() {
                 absolutely over them.
               */}
               <img
-                src="/brand/menttalis-m.png"
+                /* Runtime string, so it needs the base prefix explicitly:
+                   Vite only rewrites asset paths it can resolve at build time. */
+                src={`${import.meta.env.BASE_URL}brand/menttalis-m.png`}
                 alt="Menttalis"
                 width={30}
                 height={30}

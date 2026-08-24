@@ -116,9 +116,18 @@ src/
 
 ## Deploy
 
-Hospedado na Netlify a partir da branch `main`: cada push dispara um build.
-As configurações vivem em `netlify.toml` (comando, pasta publicada, versão do
-Node e cabeçalhos de cache), então não é preciso configurar nada pela interface.
+Servido em **menttalis.com/flow**. O app é um site Netlify próprio, e o site
+principal (Next.js, outro repositório) faz um rewrite `/flow/*` com status 200
+apontando para cá — a URL que o visitante vê continua sendo `menttalis.com/flow`.
+
+Por isso o Vite é construído com `base: '/flow/'`, e o manifesto do PWA declara
+`start_url` e `scope` em `/flow/`. Caminhos montados em tempo de execução (o
+logo no topo) usam `import.meta.env.BASE_URL`, porque o Vite só reescreve os
+caminhos que consegue resolver em tempo de build.
+
+Cada push na `main` dispara um build. As configurações vivem em `netlify.toml`
+(comando, pasta publicada, versão do Node e cabeçalhos de cache), então não é
+preciso configurar nada pela interface.
 
 ```bash
 npm run build
