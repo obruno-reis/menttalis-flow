@@ -1,0 +1,478 @@
+@import 'tailwindcss';
+
+/* ---------------------------------------------------------------------- */
+/* Design tokens — Menttalis Flow                                          */
+/* ---------------------------------------------------------------------- */
+
+/*
+ * Light is the default theme; dark is opted into with data-theme="dark".
+ *
+ * Two accents rather than one: `--accent` is the bright brand green used as a
+ * FILL with dark ink on top, which reads well on either ground. `--accent-line`
+ * is the accent used for text, strokes and outlines directly on the page — that
+ * one has to go deep in light mode, because brand green on light grey is far
+ * below a legible contrast ratio.
+ */
+:root {
+  color-scheme: light;
+
+  --background: #edeef1;
+  --surface: #f7f8fa;
+  --surface-elevated: #ffffff;
+  --surface-hover: #e6e9ee;
+
+  --text-primary: #14253c;
+  --text-secondary: #4b5a70;
+  /* Kept at or above 4.5:1 against --background for WCAG AA body text. */
+  --text-muted: #5d6a80;
+
+  --border: rgba(20, 37, 60, 0.13);
+  --border-strong: rgba(20, 37, 60, 0.24);
+
+  --accent: #8aff8a;
+  --accent-strong: #6ef06e;
+  --accent-soft: rgba(138, 255, 138, 0.24);
+  --accent-ink: #0a1f12;
+  --accent-line: #0e6b34;
+
+  --break: #9db8ff;
+  --break-soft: rgba(157, 184, 255, 0.26);
+  --break-line: #2b47a6;
+
+  /* Numerals stay navy in light, in every session state. */
+  --ink-focus: var(--text-primary);
+  --ink-break: var(--text-primary);
+
+  --cursor-dot: #14253c;
+  --cursor-dot-glow: rgba(20, 37, 60, 0.28);
+
+  --danger: #b23b22;
+
+  --scrim: rgba(20, 37, 60, 0.3);
+  --grid-line: rgba(14, 107, 52, 0.24);
+  --glass: rgba(247, 248, 250, 0.72);
+  --glass-focus: rgba(255, 255, 255, 0.88);
+
+  --ambient-a: rgba(138, 255, 138, 0.16);
+  --ambient-b: rgba(157, 184, 255, 0.14);
+  --grain-opacity: 0.02;
+
+  --shadow-sm: 0 1px 2px rgba(20, 37, 60, 0.1);
+  --shadow-md: 0 14px 34px -14px rgba(20, 37, 60, 0.26);
+  --shadow-glow: 0 0 48px rgba(14, 107, 52, 0.1);
+
+  --radius-sm: 10px;
+  --radius-md: 18px;
+  --radius-lg: 28px;
+  --radius-full: 999px;
+
+  /* Motion */
+  --motion-instant: 120ms;
+  --motion-fast: 200ms;
+  --motion-normal: 360ms;
+  --motion-slow: 640ms;
+  --motion-ambient: 4000ms;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.3, 1.4, 0.5, 1);
+
+  /* Typography */
+  --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Instrument Sans', 'Inter', -apple-system, sans-serif;
+
+  /* Reach of the cursor-following reveals. */
+  --spot-grid: 130px;
+  --spot-text: 78px;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --background: #0a141f;
+  --surface: #101f33;
+  --surface-elevated: #16283f;
+  --surface-hover: #1b2f4a;
+
+  --text-primary: #f4f6f8;
+  --text-secondary: #a9b4c4;
+  --text-muted: #7d8b9d;
+
+  --border: rgba(244, 246, 248, 0.09);
+  --border-strong: rgba(244, 246, 248, 0.16);
+
+  --accent: #8affa0;
+  --accent-strong: #6dfb8c;
+  --accent-soft: rgba(138, 255, 160, 0.14);
+  --accent-ink: #0a1f12;
+  --accent-line: #8affa0;
+
+  --break: #9db8ff;
+  --break-soft: rgba(157, 184, 255, 0.14);
+  --break-line: #9db8ff;
+
+  --ink-focus: var(--accent-line);
+  --ink-break: var(--break-line);
+
+  --cursor-dot: #ffffff;
+  --cursor-dot-glow: rgba(255, 255, 255, 0.4);
+
+  --danger: #ff9d8a;
+
+  --scrim: rgba(4, 10, 18, 0.5);
+  --grid-line: rgba(138, 255, 160, 0.3);
+  --glass: rgba(16, 31, 51, 0.62);
+  --glass-focus: rgba(22, 40, 63, 0.82);
+
+  --ambient-a: rgba(138, 255, 160, 0.07);
+  --ambient-b: rgba(157, 184, 255, 0.05);
+  --grain-opacity: 0.035;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.28);
+  --shadow-md: 0 12px 32px -12px rgba(0, 0, 0, 0.45);
+  --shadow-glow: 0 0 48px rgba(138, 255, 160, 0.14);
+}
+
+@theme {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-hover: var(--surface-hover);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-line: var(--accent-line);
+  --color-break-line: var(--break-line);
+  --color-break: var(--break);
+  --color-break-soft: var(--break-soft);
+  --color-danger: var(--danger);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+
+  --font-sans: var(--font-ui);
+  --font-display: var(--font-display);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--background);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+  min-height: 100svh;
+}
+
+#root {
+  min-height: 100svh;
+  isolation: isolate;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.tabular-nums {
+  font-feature-settings: 'tnum' 1, 'cv05' 1;
+  font-variant-numeric: tabular-nums;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--text-primary);
+}
+
+/* Focus visibility — never suppressed */
+:focus-visible {
+  outline: 2px solid var(--accent-line);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+button {
+  font-family: inherit;
+  color: inherit;
+}
+
+/* Ambient background: soft radial glow + grain, echoes the brand's dark navy field */
+.ambient-field {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(60% 50% at 78% 8%, var(--ambient-a), transparent 60%),
+    radial-gradient(50% 40% at 10% 95%, var(--ambient-b), transparent 60%),
+    var(--background);
+  transition: background var(--motion-slow) var(--ease-standard);
+}
+
+.ambient-field::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: var(--grain-opacity);
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---------------------------------------------------------------------- */
+/* Cursor dot — replaces the pointer                                       */
+/* ---------------------------------------------------------------------- */
+
+/* Scoped to the attribute the component sets, so the arrow always comes back
+   if the dot is not rendered (touch devices, or the component unmounting). */
+html[data-cursor='dot'],
+html[data-cursor='dot'] * {
+  cursor: none !important;
+}
+
+/* Outer node carries only the position, so the ball is free to scale. */
+.cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 60;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--motion-fast) var(--ease-standard);
+}
+
+.cursor-dot[data-active='true'] {
+  opacity: 1;
+}
+
+.cursor-dot__ball {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  background: var(--cursor-dot);
+  box-shadow: 0 0 20px var(--cursor-dot-glow);
+  transform: translate(-50%, -50%);
+  transition:
+    width var(--motion-fast) var(--ease-spring),
+    height var(--motion-fast) var(--ease-spring),
+    opacity var(--motion-fast) var(--ease-standard);
+}
+
+/* Swelling over interactive targets carries the affordance the arrow used to. */
+/* Kept well under the size of a control: at 60px the disc covered a button
+   whole and dimmed its label. */
+.cursor-dot[data-over='true'] .cursor-dot__ball {
+  width: 40px;
+  height: 40px;
+  opacity: 0.26;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Grid reveal — a lattice uncovered by the cursor                         */
+/* ---------------------------------------------------------------------- */
+
+.grid-reveal {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--motion-slow) var(--ease-standard);
+
+  --mx: 50vw;
+  --my: 50vh;
+  --grid-cell: 46px;
+
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: var(--grid-cell) var(--grid-cell);
+
+  /* Only the disc around the pointer is painted; the rest stays hidden. */
+  --reveal: radial-gradient(
+    circle var(--spot-grid) at var(--mx) var(--my),
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 0.5) 46%,
+    rgba(0, 0, 0, 0) 74%
+  );
+  -webkit-mask-image: var(--reveal);
+  mask-image: var(--reveal);
+}
+
+.grid-reveal[data-active='true'] {
+  opacity: 1;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Timer numerals — solid, dissolving to a brand outline under the cursor  */
+/* ---------------------------------------------------------------------- */
+
+/* The ink arrives as a custom property so this rule can own `color`
+   outright, instead of losing to an inline style. */
+.clock-numerals {
+  color: var(--clock-ink, var(--text-primary));
+  transition: color var(--motion-slow) var(--ease-standard);
+}
+
+/*
+ * The outlined copy sits exactly on top of the solid one and is masked to a
+ * disc around the cursor, so the swap happens only where the pointer is —
+ * the same local reveal as the grid, rather than the whole clock flipping.
+ */
+.numerals-outline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: inline-flex;
+  align-items: flex-start;
+  pointer-events: none;
+  /*
+   * Light: the outline takes the same ink the digit is already filled with, so
+   * the cursor only hollows it out. `--clock-ink` is set per clock and has to be
+   * read here, on the element itself — a var() inside a :root-level token would
+   * resolve against :root, where --clock-ink does not exist.
+   */
+  color: var(--clock-ink, var(--text-primary));
+  opacity: 0;
+  transition: opacity var(--motion-normal) var(--ease-standard);
+
+  /* A wide solid core keeps the swap crisp; the softness lives at the rim. */
+  --reveal-text: radial-gradient(
+    circle var(--spot-text) at var(--lx, -9999px) var(--ly, -9999px),
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 1) 68%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  -webkit-mask-image: var(--reveal-text);
+  mask-image: var(--reveal-text);
+}
+
+/*
+ * Only the digits are hollowed out — see SvgFilters for why the ring is
+ * derived rather than stroked. Punctuation is left solid: the colon's dots are
+ * smaller than the erode radius, so outlining them just yields a heavy blob.
+ */
+.numerals-outline .digit-column {
+  filter: url(#numeral-outline);
+}
+
+[data-theme='dark'] .numerals-outline {
+  color: var(--accent-line);
+}
+
+.clock-spot[data-active='true'] .numerals-outline {
+  opacity: 1;
+}
+
+/*
+ * Where the outline shows, the solid glyph beneath is punched out by the
+ * inverse mask, so the digit truly reads as hollow instead of a green outline
+ * laid over a still-white number.
+ */
+.clock-spot[data-active='true'] .numerals-fill {
+  --punch: radial-gradient(
+    circle var(--spot-text) at var(--lx, -9999px) var(--ly, -9999px),
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0) 68%,
+    rgba(0, 0, 0, 1) 100%
+  );
+  -webkit-mask-image: var(--punch);
+  mask-image: var(--punch);
+}
+
+input::placeholder {
+  color: var(--text-muted);
+}
+
+/*
+ * Frosted glass: the revealed grid passes behind the field and is blurred by
+ * it, so the lattice reads as a layer underneath rather than lines running
+ * across the text.
+ */
+.intention-field {
+  color: var(--text-primary);
+  background: var(--glass);
+  border: 1px solid var(--border);
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
+  backdrop-filter: blur(14px) saturate(130%);
+  transition:
+    border-color var(--motion-fast) var(--ease-standard),
+    background var(--motion-fast) var(--ease-standard);
+}
+
+.intention-field:hover {
+  border-color: var(--border-strong);
+}
+
+.intention-field:focus {
+  border-color: var(--border-strong);
+  background: var(--glass-focus);
+}
+
+/* Volume slider */
+.flow-slider {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: var(--border-strong);
+  outline-offset: 6px;
+}
+
+.flow-slider:disabled {
+  opacity: 0.4;
+}
+
+.flow-slider::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: var(--radius-full);
+  background: var(--accent-line);
+  border: none;
+  cursor: pointer;
+  transition: transform var(--motion-fast) var(--ease-spring);
+}
+
+.flow-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.18);
+}
+
+.flow-slider::-moz-range-thumb {
+  width: 15px;
+  height: 15px;
+  border-radius: var(--radius-full);
+  background: var(--accent-line);
+  border: none;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

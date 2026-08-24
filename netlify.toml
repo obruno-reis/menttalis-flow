@@ -1,0 +1,26 @@
+# Netlify build for Menttalis Flow — a static Vite site, no server side.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Pinned so a change to Netlify's default build image cannot break the build.
+  # Vite 8 requires Node 20.19+ / 22.12+.
+  NODE_VERSION = "22"
+
+# The service worker must never be served from cache: a stale one keeps
+# controlling the page and visitors would never receive a new build.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Vite fingerprints everything under /assets, so those files are immutable.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# No SPA catch-all redirect on purpose: the app has no client-side router, so
+# rewriting unknown paths to index.html would only hide real 404s.
